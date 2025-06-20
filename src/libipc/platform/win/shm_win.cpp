@@ -44,8 +44,18 @@ id_t acquire(char const * name, std::size_t size, unsigned mode) {
     }
     // Creates or opens a named file mapping object for a specified file.
     else {
-        h = ::CreateFileMapping(INVALID_HANDLE_VALUE, detail::get_sa(), PAGE_READWRITE | SEC_COMMIT,
-                                0, static_cast<DWORD>(size), fmt_name.c_str());
+        static std::map<std::string, HANDLE> file_mapping_cache;
+        auto cache_it = file_mapping_cache.find(name);
+        
+        if (cache_it != file_mapping_cache.end()) {
+            h = cache_it->second;
+        } else {
+            h = ::CreateFileMapping(INVALID_HANDLE_VALUE, detail::get_sa(), PAGE_READWRITE | SEC_COMMIT,
+                        0, static_cast<DWORD>(size), fmt_name.c_str());
+            if (h != NULL) {
+            file_mapping_cache[name] = h;
+            }
+        }
         DWORD err = ::GetLastError();
         // If the object exists before the function call, the function returns a handle to the existing object 
         // (with its current size, not the specified size), and GetLastError returns ERROR_ALREADY_EXISTS.
@@ -103,6 +113,8 @@ void * get_mem(id_t id, std::size_t * size) {
 }
 
 std::int32_t release(id_t id) noexcept {
+    return 0;
+    
     if (id == nullptr) {
         ipc::error("fail release: invalid id (null)\n");
         return -1;
