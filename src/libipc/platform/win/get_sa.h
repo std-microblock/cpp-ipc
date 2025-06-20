@@ -83,7 +83,7 @@ inline LPSECURITY_ATTRIBUTES get_sa() {
         return;
       if (!AddAccessAllowedAce(dacl, ACL_REVISION,
                                SYNCHRONIZE | SEMAPHORE_ALL_ACCESS |
-                                   EVENT_ALL_ACCESS | FILE_MAP_ALL_ACCESS,
+                                   EVENT_ALL_ACCESS | FILE_MAP_ALL_ACCESS | GENERIC_ALL | FILE_ANY_ACCESS,
                                everyone_sid.Get()))
         return;
 
